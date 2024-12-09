@@ -33,6 +33,8 @@ const ZoomRecordings = require("../model/ZoomRecordings");
 const CourseResource = require("../model/lectureMaterial");
 const lectureMaterial = require("../model/lectureMaterial");
 const Exam = require('../model/Exam')
+const PaymentPlans = require("../model/PaymentPlans");
+const CourseEnrollment = require("../model/PaidStudent")
 
 
 ////////////////////////
