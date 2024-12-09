@@ -36,22 +36,23 @@ const Exam = require('../model/Exam')
 
 
 ////////////////////////
-// Add a new exam result
+////////////////////////
+//add exam
 router.post("/exam-results/add", async (req, res) => {
   try {
-    const { course, subject, batch, studentName, regNo, results } = req.body;
+    const { courseName, studentId, studentName, email, marks, grade } = req.body;
 
-    if (!course || !subject || !batch || !studentName || !regNo) {
+    if (!courseName || !studentId || !studentName || !email || marks == null) {
       return res.status(400).json({ error: "All fields are required!" });
     }
 
     const newResult = new Exam({
-      course,
-      subject,
-      batch,
+      courseName,
+      studentId,
       studentName,
-      regNo,
-      results,
+      email,
+      marks,
+      grade,
     });
 
     await newResult.save();
@@ -62,48 +63,17 @@ router.post("/exam-results/add", async (req, res) => {
   }
 });
 
-// View all exam results
-router.get("/exam-results", async (req, res) => {
-  try {
-    const results = await Exam.find();
+//edit exam
 
-    res.status(200).json({
-      message: "Exam results retrieved successfully!",
-      data: results,
+router.put("/exam-results/edit/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedData = req.body;
+
+    const updatedResult = await ExamResult.findByIdAndUpdate(id, updatedData, {
+      new: true,
+      runValidators: true,
     });
-  } catch (err) {
-    res.status(500).json({ error: "An error occurred", details: err.message });
-  }
-});
-
-// Get an exam result by ID
-router.get("/exam-results/:id", async (req, res) => {
-  try {
-    const result = await Exam.findById(req.params.id);
-
-    if (!result) {
-      return res.status(404).json({ error: "Exam result not found!" });
-    }
-
-    res.status(200).json({
-      message: "Exam result retrieved successfully!",
-      data: result,
-    });
-  } catch (err) {
-    res.status(500).json({ error: "An error occurred", details: err.message });
-  }
-});
-
-// Update an exam result by ID
-router.put("/exam-results/update/:id", async (req, res) => {
-  try {
-    const { course, subject, batch, studentName, regNo, results } = req.body;
-
-    const updatedResult = await Exam.findByIdAndUpdate(
-      req.params.id,
-      { course, subject, batch, studentName, regNo, results },
-      { new: true, runValidators: true }
-    );
 
     if (!updatedResult) {
       return res.status(404).json({ error: "Exam result not found!" });
@@ -118,27 +88,37 @@ router.put("/exam-results/update/:id", async (req, res) => {
   }
 });
 
-// Delete an exam result by ID
+//delete exam
 router.delete("/exam-results/delete/:id", async (req, res) => {
   try {
-    const deletedResult = await Exam.findByIdAndDelete(req.params.id);
+    const { id } = req.params;
+
+    const deletedResult = await ExamResult.findByIdAndDelete(id);
 
     if (!deletedResult) {
       return res.status(404).json({ error: "Exam result not found!" });
     }
 
-    res.status(200).json({
-      message: "Exam result deleted successfully!",
-      data: deletedResult,
-    });
+    res.status(200).json({ message: "Exam result deleted successfully!" });
   } catch (err) {
     res.status(500).json({ error: "An error occurred", details: err.message });
   }
 });
 
 
+//exam view
+router.get("/exam-results", async (req, res) => {
+  try {
+    const results = await ExamResult.find();
 
-
+    res.status(200).json({
+      message: "Exam results retrieved successfully!",
+      data: results,
+    });
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred", details: err.message });
+  }
+});
 
 
 /////admin main
@@ -664,11 +644,13 @@ router.post('/resources/upload', upload.single('file'), async (req, res) => {
     // }
 
     // Create a new lecture material object
+    console.log("aaaaaaaaaaaaaaaaaaaaaa", req.file.filename)
     const lectureMaterial = {
       materialName,
       materialType,
       materialDescription,
-      materialLink: req.file.path, // Save the file path
+      // materialLink: path.basename(req.file.path),
+      PaymentPlanMaterialLink: req.file.filename, // Save the file path
     };
 
     // Check if the course already exists
@@ -728,7 +710,6 @@ router.post('/resources/paid-students', async (req, res) => {
     // Create a new student object
     const newStudent = {
       studentId,
-      studentName,
       email,
     };
 
@@ -765,6 +746,113 @@ router.get("/resources", (req, res) => {
 
   })
 })
+//////////////////////////////////////////
+////////////Available Payment Plans
+router.post("/Payment/Plans", (req, res) => {
+  let paymentPlans = new PaymentPlans(req.body);
+  paymentPlans.save((err) => {
+    if (err) {
+      return res.status(400).json({
+        error: err,
+      });
+    }
+    return res.status(200).json({
+      success: "Payment Plans saved successfully",
+    });
+  });
+});
+
+///// get Available Payment Plans//////
+router.get("/Payment/Plans", (req, res) => {
+  PaymentPlans.find().exec((err, PaymentPlans) => {
+    if (err) {
+      return res.status(400).json({
+        error: err,
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      CoursesData: PaymentPlans,
+    });
+  });
+});
+
+///////// delete Available Payment Plans
+router.delete("/Payment/Plans/delete/:id", (req, res) => {
+  PaymentPlans.findByIdAndRemove(req.params.id, (err, deletedPaymentPlans) => {
+    if (err) {
+      return res.status(400).json({
+        message: "Delete unsuccessful",
+        err,
+      });
+    }
+    return res.json({
+      message: "Deleted successfully",
+      deleteData: deletedPaymentPlans,
+    });
+  });
+});
+
+
+/////////////////////////////////////////////////
+////// course enrolment
+router.post('/Payment/upload', upload.single('file'), async (req, res) => {
+  try {
+    // Check if a file was uploaded
+    if (!req.file) {
+      return res.status(400).json({ error: 'File not uploaded!' });
+    }
+    // Extract metadata from the request body
+    const { courseName, paymentPlans, studentId } = req.body;
+
+    if (!courseName || !paymentPlans || !studentId) {
+      return res.status(400).json({ error: 'All fields are required!' });
+    }
+    // Create a paid student object
+    const paidStudent = {
+      studentId,
+      paymentPlans,
+      slipLink: req.file.filename, // Store the file name as slipLink
+    };
+    // Check if the course exists
+    let courseEnrollment = await CourseEnrollment.findOne({ courseName });
+    if (courseEnrollment) {
+      // If the course exists, add the paid student
+      courseEnrollment.paidStudents.push(paidStudent);
+    } else {
+      // Create a new course enrollment if it doesn't exist
+      courseEnrollment = new CourseEnrollment({
+        courseName,
+        paidStudents: [paidStudent],
+      });
+    }
+
+    // Save the updated or new course enrollment
+    await courseEnrollment.save();
+
+    res.status(200).json({
+      message: 'Payment details uploaded and saved successfully!',
+      data: courseEnrollment,
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'An error occurred', details: err.message });
+  }
+});
+
+///// get course enrolment//////
+router.get("/Payment/upload", (req, res) => {
+  CourseEnrollment.find().exec((err, CourseEnrollment) => {
+    if (err) {
+      return res.status(400).json({
+        error: err,
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      CoursesData: CourseEnrollment,
+    });
+  });
+});
 
 
 // router.post("/", validater, UserController.userLogin);
