@@ -32,9 +32,115 @@ const ZoomOnlineSessions = require("../model/ZoomOnlineSessions");
 const ZoomRecordings = require("../model/ZoomRecordings");
 const CourseResource = require("../model/lectureMaterial");
 const lectureMaterial = require("../model/lectureMaterial");
+const Exam = require('../model/Exam')
 
 
 ////////////////////////
+// Add a new exam result
+router.post("/exam-results/add", async (req, res) => {
+  try {
+    const { course, subject, batch, studentName, regNo, results } = req.body;
+
+    if (!course || !subject || !batch || !studentName || !regNo) {
+      return res.status(400).json({ error: "All fields are required!" });
+    }
+
+    const newResult = new Exam({
+      course,
+      subject,
+      batch,
+      studentName,
+      regNo,
+      results,
+    });
+
+    await newResult.save();
+
+    res.status(200).json({ message: "Exam result added successfully!" });
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred", details: err.message });
+  }
+});
+
+// View all exam results
+router.get("/exam-results", async (req, res) => {
+  try {
+    const results = await Exam.find();
+
+    res.status(200).json({
+      message: "Exam results retrieved successfully!",
+      data: results,
+    });
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred", details: err.message });
+  }
+});
+
+// Get an exam result by ID
+router.get("/exam-results/:id", async (req, res) => {
+  try {
+    const result = await Exam.findById(req.params.id);
+
+    if (!result) {
+      return res.status(404).json({ error: "Exam result not found!" });
+    }
+
+    res.status(200).json({
+      message: "Exam result retrieved successfully!",
+      data: result,
+    });
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred", details: err.message });
+  }
+});
+
+// Update an exam result by ID
+router.put("/exam-results/update/:id", async (req, res) => {
+  try {
+    const { course, subject, batch, studentName, regNo, results } = req.body;
+
+    const updatedResult = await Exam.findByIdAndUpdate(
+      req.params.id,
+      { course, subject, batch, studentName, regNo, results },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedResult) {
+      return res.status(404).json({ error: "Exam result not found!" });
+    }
+
+    res.status(200).json({
+      message: "Exam result updated successfully!",
+      data: updatedResult,
+    });
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred", details: err.message });
+  }
+});
+
+// Delete an exam result by ID
+router.delete("/exam-results/delete/:id", async (req, res) => {
+  try {
+    const deletedResult = await Exam.findByIdAndDelete(req.params.id);
+
+    if (!deletedResult) {
+      return res.status(404).json({ error: "Exam result not found!" });
+    }
+
+    res.status(200).json({
+      message: "Exam result deleted successfully!",
+      data: deletedResult,
+    });
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred", details: err.message });
+  }
+});
+
+
+
+
+
+
 /////admin main
 router.post("/User/adminLogin", async (req, res, next) => {
   try {
