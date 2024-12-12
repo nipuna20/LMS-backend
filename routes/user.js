@@ -35,24 +35,24 @@ const lectureMaterial = require("../model/lectureMaterial");
 const Exam = require('../model/Exam')
 const PaymentPlans = require("../model/PaymentPlans");
 const CourseEnrollment = require("../model/PaidStudent")
-const Certificate = require("../model/Certificate");
+// const Certificate = require("../model/Certificate");
 // const QRCode = require("qrcode");
 const path = require("path");
-// const fs = require("fs");
+const fs = require("fs");
 
 ////////////////////////
 // Certificate download route
-router.get("/certificate/download/:filename", (req, res) => {
-  const { filename } = req.params;
-  const filePath = path.join(__dirname, "../certificates", filename); // Adjust path as needed
+// router.get("/certificate/download/:filename", (req, res) => {
+//   const { filename } = req.params;
+//   const filePath = path.join(__dirname, "../certificates", filename); // Adjust path as needed
 
-  res.download(filePath, (err) => {
-    if (err) {
-      console.error("Error while downloading the file:", err);
-      res.status(500).send("Error downloading the file.");
-    }
-  });
-});
+//   res.download(filePath, (err) => {
+//     if (err) {
+//       console.error("Error while downloading the file:", err);
+//       res.status(500).send("Error downloading the file.");
+//     }
+//   });
+// });
 // Upload certificate and generate QR code
 // router.post("/upload", upload.single("certificate"), async (req, res) => {
 //   try {
@@ -85,16 +85,16 @@ router.get("/certificate/download/:filename", (req, res) => {
 //   }
 // });
 
-// // Download certificate
-// router.get("/download/:filename", (req, res) => {
-//   const filePath = path.join(__dirname, "../certificates", req.params.filename);
+// Download certificate
+router.get("/download/:filename", (req, res) => {
+  const filePath = path.join(__dirname, "../certificates", req.params.filename);
 
-//   if (fs.existsSync(filePath)) {
-//     res.download(filePath);
-//   } else {
-//     res.status(404).json({ error: "File not found." });
-//   }
-// });
+  if (fs.existsSync(filePath)) {
+    res.download(filePath);
+  } else {
+    res.status(404).json({ error: "File not found." });
+  }
+});
 
 // // Get all certificates
 // router.get("/", async (req, res) => {
