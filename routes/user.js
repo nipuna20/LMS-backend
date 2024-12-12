@@ -36,54 +36,54 @@ const Exam = require('../model/Exam')
 const PaymentPlans = require("../model/PaymentPlans");
 const CourseEnrollment = require("../model/PaidStudent")
 const Certificate = require("../model/Certificate");
-const QRCode = require("qrcode");
+// const QRCode = require("qrcode");
 const path = require("path");
-const fs = require("fs");
+// const fs = require("fs");
 
 ////////////////////////
 // Certificate download route
-// router.get("/certificate/download/:filename", (req, res) => {
-//   const { filename } = req.params;
-//   const filePath = path.join(__dirname, "../certificates", filename); // Adjust path as needed
+router.get("/certificate/download/:filename", (req, res) => {
+  const { filename } = req.params;
+  const filePath = path.join(__dirname, "../certificates", filename); // Adjust path as needed
 
-//   res.download(filePath, (err) => {
-//     if (err) {
-//       console.error("Error while downloading the file:", err);
-//       res.status(500).send("Error downloading the file.");
-//     }
-//   });
-// });
-// Upload certificate and generate QR code
-router.post("/upload", upload.single("certificate"), async (req, res) => {
-  try {
-    const { studentName, courseName } = req.body;
-
-    if (!req.file) {
-      return res.status(400).json({ error: "Certificate file is required." });
+  res.download(filePath, (err) => {
+    if (err) {
+      console.error("Error while downloading the file:", err);
+      res.status(500).send("Error downloading the file.");
     }
-
-    // Generate QR code
-    const downloadUrl = `http://your-server-domain/certificate/download/${req.file.filename}`;
-    const qrCode = await QRCode.toDataURL(downloadUrl);
-
-    // Save to database
-    const certificate = new Certificate({
-      studentName,
-      courseName,
-      certificatePath: req.file.path,
-      qrCode,
-    });
-
-    await certificate.save();
-
-    res.status(200).json({
-      message: "Certificate uploaded and QR code generated successfully!",
-      certificate,
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  });
 });
+// Upload certificate and generate QR code
+// router.post("/upload", upload.single("certificate"), async (req, res) => {
+//   try {
+//     const { studentName, courseName } = req.body;
+
+//     if (!req.file) {
+//       return res.status(400).json({ error: "Certificate file is required." });
+//     }
+
+//     // Generate QR code
+//     const downloadUrl = `http://your-server-domain/certificate/download/${req.file.filename}`;
+//     const qrCode = await QRCode.toDataURL(downloadUrl);
+
+//     // Save to database
+//     const certificate = new Certificate({
+//       studentName,
+//       courseName,
+//       certificatePath: req.file.path,
+//       qrCode,
+//     });
+
+//     await certificate.save();
+
+//     res.status(200).json({
+//       message: "Certificate uploaded and QR code generated successfully!",
+//       certificate,
+//     });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// });
 
 // // Download certificate
 // router.get("/download/:filename", (req, res) => {
