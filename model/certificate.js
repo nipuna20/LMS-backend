@@ -1,30 +1,27 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const certificateSchema = new mongoose.Schema(
     {
-        filename: {
+        studentName: {
             type: String,
             required: true,
         },
-        filepath: {
+        courseName: {
             type: String,
             required: true,
         },
-        uploadedBy: {
-            type: String, // For example, user ID or email
+        certificatePath: {
+            type: String, // URL or local path to the file
             required: true,
-        },
-        uploadedAt: {
-            type: Date,
-            default: Date.now,
         },
         qrCode: {
-            type: String, // Base64 QR code or a URL pointing to the QR code image
+            type: String, // Base64 QR code
+            required: true,
         },
     },
     {
-        timestamps: true, // Automatically manage createdAt and updatedAt fields
+        timestamps: true, // Automatically manage createdAt and updatedAt
     }
 );
 
-module.exports = mongoose.model("Certificate", certificateSchema);
+module.exports = mongoose.model('Certificate', certificateSchema);
