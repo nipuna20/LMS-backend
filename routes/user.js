@@ -7,7 +7,7 @@ const validationRequest = require("@adeona-tech/common").validateRequest;
 const checkAuth = require("@adeona-tech/common").checkAuth;
 const auth = require("../middleware/auth");
 const validater = require("../middleware/validater").validater;
-const upload = require("../middleware/upload.js");
+// const upload = require("../middleware/upload.js");
 const upload_TableData = require("../middleware/upload_TableData");
 const { route } = require("../app");
 const { EmpTypeValidater } = require("../middleware/EmpTypeValidater");
@@ -36,6 +36,7 @@ const Exam = require('../model/Exam')
 const PaymentPlans = require("../model/PaymentPlans");
 const CourseEnrollment = require("../model/PaidStudent")
 const Certificate = require("../model/Certificate");
+const upload = require('../middleware/upload');
 const QRCode = require("qrcode");
 const path = require("path");
 const fs = require("fs");
@@ -65,27 +66,27 @@ const fs = require("fs");
 // });
 
 // Upload certificate and generate QR code
-router.post("/upload", upload.single("certificate"), async (req, res) => {
+router.post('/upload', upload.single('certificate'), async (req, res) => {
   try {
     const { studentName, courseName } = req.body;
 
     if (!req.file) {
-      return res.status(400).json({ error: "Certificate file is required." });
+      return res.status(400).json({ error: 'Certificate file is required.' });
     }
 
-    // Determine file URL
-    const downloadUrl = req.file.location || req.file.path || "File URL unavailable";
+    // Generate the download URL for the uploaded file
+    const downloadUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
 
-    // Generate QR code
+    // Generate a QR code for the file URL
     let qrCode;
     try {
       qrCode = await QRCode.toDataURL(downloadUrl);
-    } catch (qrError) {
-      console.error("Error generating QR code:", qrError);
-      return res.status(500).json({ error: "Failed to generate QR code." });
+    } catch (err) {
+      console.error('Error generating QR code:', err.message);
+      return res.status(500).json({ error: 'Failed to generate QR code.' });
     }
 
-    // Save to database
+    // Save the certificate details to the database
     const certificate = new Certificate({
       studentName,
       courseName,
@@ -93,15 +94,20 @@ router.post("/upload", upload.single("certificate"), async (req, res) => {
       qrCode,
     });
 
-    await certificate.save();
+    try {
+      await certificate.save();
+    } catch (err) {
+      console.error('Error saving certificate:', err.message);
+      return res.status(500).json({ error: 'Failed to save certificate.' });
+    }
 
     res.status(200).json({
-      message: "Certificate uploaded and QR code generated successfully!",
+      message: 'Certificate uploaded and QR code generated successfully!',
       certificate,
     });
-  } catch (error) {
-    console.error("Error in upload route:", error);
-    res.status(500).json({ error: error.message });
+  } catch (err) {
+    console.error('Error in upload route:', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
