@@ -35,6 +35,77 @@ const lectureMaterial = require("../model/lectureMaterial");
 const Exam = require('../model/Exam')
 const PaymentPlans = require("../model/PaymentPlans");
 const CourseEnrollment = require("../model/PaidStudent")
+const Exam = require('../model/Exam')
+const Certificate = require("../model/Certificate");
+const QRCode = require("qrcode");
+const path = require("path");
+const fs = require("fs");
+
+////////////////////////
+// Certificate download route
+router.get("/certificate/download/:filename", (req, res) => {
+  const { filename } = req.params;
+  const filePath = path.join(__dirname, "../certificates", filename); // Adjust path as needed
+
+  res.download(filePath, (err) => {
+    if (err) {
+      console.error("Error while downloading the file:", err);
+      res.status(500).send("Error downloading the file.");
+    }
+  });
+});
+// Upload certificate and generate QR code
+router.post("/upload", upload.single("certificate"), async (req, res) => {
+  try {
+    const { studentName, courseName } = req.body;
+
+    if (!req.file) {
+      return res.status(400).json({ error: "Certificate file is required." });
+    }
+
+    // Generate QR code
+    const downloadUrl = `http://your-server-domain/certificate/download/${req.file.filename}`;
+    const qrCode = await QRCode.toDataURL(downloadUrl);
+
+    // Save to database
+    const certificate = new Certificate({
+      studentName,
+      courseName,
+      certificatePath: req.file.path,
+      qrCode,
+    });
+
+    await certificate.save();
+
+    res.status(200).json({
+      message: "Certificate uploaded and QR code generated successfully!",
+      certificate,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Download certificate
+router.get("/download/:filename", (req, res) => {
+  const filePath = path.join(__dirname, "../certificates", req.params.filename);
+
+  if (fs.existsSync(filePath)) {
+    res.download(filePath);
+  } else {
+    res.status(404).json({ error: "File not found." });
+  }
+});
+
+// Get all certificates
+router.get("/", async (req, res) => {
+  try {
+    const certificates = await Certificate.find();
+    res.status(200).json({ certificates });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 
 ////////////////////////
@@ -752,7 +823,7 @@ router.get("/resources", (req, res) => {
 ////////////Available Payment Plans
 router.post("/Payment/Plans", (req, res) => {
   let paymentPlans = new PaymentPlans(req.body);
-  paymentPlans.save((err) => {
+  paymentPlans.save((err, savedPlan) => {
     if (err) {
       return res.status(400).json({
         error: err,
@@ -760,6 +831,7 @@ router.post("/Payment/Plans", (req, res) => {
     }
     return res.status(200).json({
       success: "Payment Plans saved successfully",
+      PaymentPlans: savedPlan
     });
   });
 });
@@ -774,7 +846,7 @@ router.get("/Payment/Plans", (req, res) => {
     }
     return res.status(200).json({
       success: true,
-      CoursesData: PaymentPlans,
+      paymentPlans: PaymentPlans,
     });
   });
 });
