@@ -36,75 +36,88 @@ const Exam = require('../model/Exam')
 const PaymentPlans = require("../model/PaymentPlans");
 const CourseEnrollment = require("../model/PaidStudent")
 const Certificate = require("../model/Certificate");
-// const QRCode = require("qrcode");
+const QRCode = require("qrcode");
 const path = require("path");
 const fs = require("fs");
 
 ////////////////////////
 // Certificate download route
 // router.get("/certificate/download/:filename", (req, res) => {
-//   const { filename } = req.params;
-//   const filePath = path.join(__dirname, "../certificates", filename); // Adjust path as needed
-
-//   res.download(filePath, (err) => {
-//     if (err) {
-//       console.error("Error while downloading the file:", err);
-//       res.status(500).send("Error downloading the file.");
-//     }
-//   });
-// });
-// Upload certificate and generate QR code
-// router.post("/upload", upload.single("certificate"), async (req, res) => {
 //   try {
-//     const { studentName, courseName } = req.body;
+//     const { filename } = req.params;
+//     const filePath = path.join(__dirname, "../certificates", filename);
 
-//     if (!req.file) {
-//       return res.status(400).json({ error: "Certificate file is required." });
+//     // Check if the file exists
+//     if (!fs.existsSync(filePath)) {
+//       return res.status(404).send("File not found");
 //     }
 
-//     // Generate QR code
-//     const downloadUrl = `http://your-server-domain/certificate/download/${req.file.filename}`;
-//     const qrCode = await QRCode.toDataURL(downloadUrl);
-
-//     // Save to database
-//     const certificate = new Certificate({
-//       studentName,
-//       courseName,
-//       certificatePath: req.file.path,
-//       qrCode,
+//     res.download(filePath, (err) => {
+//       if (err) {
+//         console.error("Error while downloading the file:", err);
+//         res.status(500).send("Error downloading the file.");
+//       }
 //     });
+//   } catch (error) {
+//     console.error("Error in download route:", error);
+//     res.status(500).send("Internal Server Error");
+//   }
+// });
 
-//     await certificate.save();
+// Upload certificate and generate QR code
+router.post("/upload", upload.single("certificate"), async (req, res) => {
+  try {
+    const { studentName, courseName } = req.body;
 
-//     res.status(200).json({
-//       message: "Certificate uploaded and QR code generated successfully!",
-//       certificate,
-//     });
+    if (!req.file) {
+      return res.status(400).json({ error: "Certificate file is required." });
+    }
+
+    // Use environment-based URL
+    const downloadUrl = `${process.env.BASE_URL}/certificate/download/${req.file.filename}`;
+    const qrCode = await QRCode.toDataURL(downloadUrl);
+
+    // Save to database
+    const certificate = new Certificate({
+      studentName,
+      courseName,
+      certificatePath: req.file.path,
+      qrCode,
+    });
+
+    await certificate.save();
+
+    res.status(200).json({
+      message: "Certificate uploaded and QR code generated successfully!",
+      certificate,
+    });
+  } catch (error) {
+    console.error("Error in upload route:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+// Download certificate
+// router.get("/download/:filename", (req, res) => {
+//   const filePath = path.join(__dirname, "../certificates", req.params.filename);
+
+//   if (fs.existsSync(filePath)) {
+//     res.download(filePath);
+//   } else {
+//     res.status(404).json({ error: "File not found." });
+//   }
+// });
+
+// // Get all certificates
+// router.get("/", async (req, res) => {
+//   try {
+//     const certificates = await Certificate.find();
+//     res.status(200).json({ certificates });
 //   } catch (error) {
 //     res.status(500).json({ error: error.message });
 //   }
 // });
-
-// Download certificate
-router.get("/download/:filename", (req, res) => {
-  const filePath = path.join(__dirname, "../certificates", req.params.filename);
-
-  if (fs.existsSync(filePath)) {
-    res.download(filePath);
-  } else {
-    res.status(404).json({ error: "File not found." });
-  }
-});
-
-// Get all certificates
-router.get("/", async (req, res) => {
-  try {
-    const certificates = await Certificate.find();
-    res.status(200).json({ certificates });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
 
 
 ////////////////////////
