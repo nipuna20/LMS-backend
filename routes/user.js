@@ -35,7 +35,7 @@ const lectureMaterial = require("../model/lectureMaterial");
 const Exam = require('../model/Exam')
 const PaymentPlans = require("../model/PaymentPlans");
 const CourseEnrollment = require("../model/PaidStudent")
-// const Certificate = require("../model/Certificate");
+const Certificate = require("../model/Certificate");
 // const QRCode = require("qrcode");
 const path = require("path");
 const fs = require("fs");
@@ -96,15 +96,15 @@ router.get("/download/:filename", (req, res) => {
   }
 });
 
-// // Get all certificates
-// router.get("/", async (req, res) => {
-//   try {
-//     const certificates = await Certificate.find();
-//     res.status(200).json({ certificates });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// });
+// Get all certificates
+router.get("/", async (req, res) => {
+  try {
+    const certificates = await Certificate.find();
+    res.status(200).json({ certificates });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 
 ////////////////////////
