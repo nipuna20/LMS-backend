@@ -1,6 +1,6 @@
-const app = require("./app"); // Import your app instance
-const debug = require("debug")("node-angular"); // Debugging utility
-const http = require("http"); // HTTP module
+const http = require("http");
+const debug = require("debug")("node-angular");
+const app = require("./app");
 
 // Normalize port into a number, string, or false
 const normalizePort = (val) => {
@@ -10,11 +10,10 @@ const normalizePort = (val) => {
   return false;
 };
 
-
 // Event listener for HTTP server "error" event
-const onError = (error) => {
+const onError = (error, port) => {
   if (error.syscall !== "listen") throw error;
-  const bind = typeof server.address() === "string" ? `pipe ${server.address()}` : `port ${port}`;
+  const bind = typeof port === "string" ? `pipe ${port}` : `port ${port}`;
   switch (error.code) {
     case "EACCES":
       console.error(`${bind} requires elevated privileges`);
