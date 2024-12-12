@@ -35,11 +35,11 @@ const lectureMaterial = require("../model/lectureMaterial");
 const Exam = require('../model/Exam')
 const PaymentPlans = require("../model/PaymentPlans");
 const CourseEnrollment = require("../model/PaidStudent")
-const Certificate = require("../model/Certificate");
+// const Certificate = require("../model/Certificate");
 const upload = require('../middleware/upload');
-const QRCode = require("qrcode");
-const path = require("path");
-const fs = require("fs");
+// const QRCode = require("qrcode");
+// const path = require("path");
+// const fs = require("fs");
 
 ////////////////////////
 // Certificate download route
