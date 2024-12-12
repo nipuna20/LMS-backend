@@ -66,50 +66,50 @@ const fs = require("fs");
 // });
 
 // Upload certificate and generate QR code
-router.post('/upload', upload.single('certificate'), async (req, res) => {
-  try {
-    const { studentName, courseName } = req.body;
+// router.post('/upload', upload.single('certificate'), async (req, res) => {
+//   try {
+//     const { studentName, courseName } = req.body;
 
-    if (!req.file) {
-      return res.status(400).json({ error: 'Certificate file is required.' });
-    }
+//     if (!req.file) {
+//       return res.status(400).json({ error: 'Certificate file is required.' });
+//     }
 
-    // Generate the download URL for the uploaded file
-    const downloadUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+//     // Generate the download URL for the uploaded file
+//     const downloadUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
 
-    // Generate a QR code for the file URL
-    let qrCode;
-    try {
-      qrCode = await QRCode.toDataURL(downloadUrl);
-    } catch (err) {
-      console.error('Error generating QR code:', err.message);
-      return res.status(500).json({ error: 'Failed to generate QR code.' });
-    }
+//     // Generate a QR code for the file URL
+//     let qrCode;
+//     try {
+//       qrCode = await QRCode.toDataURL(downloadUrl);
+//     } catch (err) {
+//       console.error('Error generating QR code:', err.message);
+//       return res.status(500).json({ error: 'Failed to generate QR code.' });
+//     }
 
-    // Save the certificate details to the database
-    const certificate = new Certificate({
-      studentName,
-      courseName,
-      certificatePath: downloadUrl,
-      qrCode,
-    });
+//     // Save the certificate details to the database
+//     const certificate = new Certificate({
+//       studentName,
+//       courseName,
+//       certificatePath: downloadUrl,
+//       qrCode,
+//     });
 
-    try {
-      await certificate.save();
-    } catch (err) {
-      console.error('Error saving certificate:', err.message);
-      return res.status(500).json({ error: 'Failed to save certificate.' });
-    }
+//     try {
+//       await certificate.save();
+//     } catch (err) {
+//       console.error('Error saving certificate:', err.message);
+//       return res.status(500).json({ error: 'Failed to save certificate.' });
+//     }
 
-    res.status(200).json({
-      message: 'Certificate uploaded and QR code generated successfully!',
-      certificate,
-    });
-  } catch (err) {
-    console.error('Error in upload route:', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
+//     res.status(200).json({
+//       message: 'Certificate uploaded and QR code generated successfully!',
+//       certificate,
+//     });
+//   } catch (err) {
+//     console.error('Error in upload route:', err.message);
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 
 
 
