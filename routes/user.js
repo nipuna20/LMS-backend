@@ -35,7 +35,6 @@ const lectureMaterial = require("../model/lectureMaterial");
 const Exam = require('../model/Exam')
 const PaymentPlans = require("../model/PaymentPlans");
 const CourseEnrollment = require("../model/PaidStudent")
-const Exam = require('../model/Exam')
 const Certificate = require("../model/Certificate");
 const QRCode = require("qrcode");
 const path = require("path");
