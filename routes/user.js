@@ -73,15 +73,23 @@ router.post("/upload", upload.single("certificate"), async (req, res) => {
       return res.status(400).json({ error: "Certificate file is required." });
     }
 
-    // Use environment-based URL
-    const downloadUrl = `${process.env.BASE_URL}/certificate/download/${req.file.filename}`;
-    const qrCode = await QRCode.toDataURL(downloadUrl);
+    // Determine file URL
+    const downloadUrl = req.file.location || req.file.path || "File URL unavailable";
+
+    // Generate QR code
+    let qrCode;
+    try {
+      qrCode = await QRCode.toDataURL(downloadUrl);
+    } catch (qrError) {
+      console.error("Error generating QR code:", qrError);
+      return res.status(500).json({ error: "Failed to generate QR code." });
+    }
 
     // Save to database
     const certificate = new Certificate({
       studentName,
       courseName,
-      certificatePath: req.file.path,
+      certificatePath: downloadUrl,
       qrCode,
     });
 
@@ -96,6 +104,7 @@ router.post("/upload", upload.single("certificate"), async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
 
 
 // Download certificate
