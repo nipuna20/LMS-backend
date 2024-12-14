@@ -669,7 +669,7 @@ router.post("/resources/upload", upload.single("file"), async (req, res) => {
       materialType,
       materialDescription,
       // materialLink: path.basename(req.file.path),
-      PaymentPlanMaterialLink: req.file.filename, // Save the file path
+      materialLink: req.file.filename, // Save the file path
     };
 
     // Check if the course already exists
@@ -963,7 +963,7 @@ router.post("/courses/subjects/studentResult", async (req, res) => {
     const studentExists = subject.StudentResults.some(
       (student) => student.studentId === studentId
     );
-    console.log("check ........... 4:")
+    console.log("check ........... 4 : " )
     if (studentExists) {
       return res.status(400).json({ error: "Student result already exists!" });
     }
@@ -973,7 +973,7 @@ router.post("/courses/subjects/studentResult", async (req, res) => {
 
     // Save the course
     await course.save();
-    console.log("check ........... 5:")
+    console.log("check ........... 5:" )
     res.status(200).json({
       message: "Student result added successfully!",
       data: course,
